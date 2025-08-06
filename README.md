@@ -93,6 +93,28 @@ From now on, please use this name for both `git clone` and `docker pull` command
 - The terminal interface is real-time streamed and interactive. You can stop and intervene at any point. If you see your agent heading in the wrong direction, just stop and tell it right away.
 - There is a lot of freedom in this framework. You can instruct your agents to regularly report back to superiors asking for permission to continue. You can instruct them to use point-scoring systems when deciding when to delegate subtasks. Superiors can double-check subordinates' results and dispute. The possibilities are endless.
 
+## ⚡ Quick Start - Automated Installation
+
+Get Agent Zero running in minutes with our automated installers:
+
+**Linux/macOS (one-line install):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/agent0ai/agent-zero/main/scripts/install.sh | bash
+```
+
+**Windows:**
+```powershell
+git clone https://github.com/agent0ai/agent-zero.git
+cd agent-zero
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+```
+
+The automated scripts handle everything: Miniconda, Python dependencies, Docker, and Agent Zero setup.
+
+📖 **For detailed instructions:** [Installation Guide](./docs/installation.md) | [Automation Scripts](./scripts/README.md)
+
+---
+
 ## 🚀 Things you can build with Agent Zero
 
 - **Development Projects** - `"Create a React dashboard with real-time data visualization"`
@@ -109,22 +131,35 @@ From now on, please use this name for both `git clone` and `docker pull` command
 
 # ⚙️ Installation
 
-Click to open a video to learn how to install Agent Zero:
+Choose your preferred installation method:
 
-[![Easy Installation guide](/docs/res/easy_ins_vid.png)](https://www.youtube.com/watch?v=w5v5Kjx51hs)
+## 🚀 Automated Installation (Recommended)
 
-A detailed setup guide for Windows, macOS, and Linux with a video can be found in the Agent Zero Documentation at [this page](./docs/installation.md).
+**Linux/macOS:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/agent0ai/agent-zero/main/scripts/install.sh | bash
+```
 
-### ⚡ Quick Start
+**Windows:**
+```powershell
+git clone https://github.com/agent0ai/agent-zero.git
+cd agent-zero
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+```
+
+## 🐳 Docker Installation (Quick Start)
+
+If you prefer Docker-only setup:
 
 ```bash
-# Pull and run with Docker
-
+# Pull and run Agent Zero
 docker pull agent0ai/agent-zero
-docker run -p 50001:80 agent0ai/agent-zero
+docker run -p 50001:80 -v ./agent-zero-data:/a0 agent0ai/agent-zero
 
 # Visit http://localhost:50001 to start
 ```
+
+📖 **For complete setup with all dependencies:** Use the [automated installers above](#-automated-installation-recommended)
 
 ## 🐳 Fully Dockerized, with Speech-to-Text and TTS
 
@@ -157,7 +192,9 @@ docker run -p 50001:80 agent0ai/agent-zero
 | Page | Description |
 |-------|-------------|
 | [Installation](./docs/installation.md) | Installation, setup and configuration |
+| [Automation Scripts](./scripts/README.md) | Automated installation scripts |
 | [Usage](./docs/usage.md) | Basic and advanced usage |
+| [Development](./docs/development.md) | Development environment setup |
 | [Architecture](./docs/architecture.md) | System design and components |
 | [Contributing](./docs/contribution.md) | How to contribute |
 | [Troubleshooting](./docs/troubleshooting.md) | Common issues and their solutions |

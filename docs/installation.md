@@ -4,7 +4,52 @@ Click to open a video to learn how to install Agent Zero:
 
 [![Easy Installation guide](/docs/res/easy_ins_vid.png)](https://www.youtube.com/watch?v=w5v5Kjx51hs)
 
-The following user guide provides instructions for installing and running Agent Zero using Docker, which is the primary runtime environment for the framework. For developers and contributors, we also provide instructions for setting up the [full development environment](#in-depth-guide-for-full-binaries-installation).
+## Automated Installation (Recommended)
+
+We now provide **automated installation scripts** that handle the entire setup process for you:
+
+### Quick Install (Linux/macOS):
+```bash
+curl -fsSL https://raw.githubusercontent.com/agent0ai/agent-zero/main/scripts/install.sh | bash
+```
+
+### Platform-Specific Installation:
+
+**Linux:**
+```bash
+git clone https://github.com/agent0ai/agent-zero.git
+cd agent-zero
+bash scripts/install-linux.sh
+```
+
+**macOS:**
+```bash
+git clone https://github.com/agent0ai/agent-zero.git
+cd agent-zero
+bash scripts/install-macos.sh
+```
+
+**Windows:**
+```powershell
+git clone https://github.com/agent0ai/agent-zero.git
+cd agent-zero
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+```
+
+The automated scripts handle:
+- Miniconda installation and environment setup
+- Python dependencies and Playwright browsers
+- Docker installation and configuration  
+- Agent Zero Docker image download
+- Creation of run scripts and data directories
+
+📖 **For detailed automation documentation, see:** [scripts/README.md](../scripts/README.md)
+
+---
+
+## Manual Installation
+
+The following user guide provides manual instructions for installing and running Agent Zero using Docker, which is the primary runtime environment for the framework. For developers and contributors, we also provide instructions for setting up the [full development environment](#in-depth-guide-for-full-binaries-installation).
 
 
 ## Windows, macOS and Linux Setup Guide

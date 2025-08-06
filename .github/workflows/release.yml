@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+
+jobs:
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: agent0ai/agent-zero
+        tags: |
+          type=ref,event=tag
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./DockerfileLocal
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        platforms: linux/amd64,linux/arm64
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  create-installers:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: agent-zero-installer-linux.tar.gz
+          - os: windows-latest
+            artifact: agent-zero-installer-windows.zip
+          - os: macos-latest
+            artifact: agent-zero-installer-macos.tar.gz
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Create installer package
+      run: |
+        mkdir -p installer
+        cp -r scripts installer/
+        cp README.md installer/
+        cp requirements.txt installer/
+
+    - name: Package installer (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        tar -czf ${{ matrix.artifact }} installer
+
+    - name: Package installer (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        7z a ${{ matrix.artifact }} installer
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./${{ matrix.artifact }}
+        asset_name: ${{ matrix.artifact }}
+        asset_content_type: application/octet-stream

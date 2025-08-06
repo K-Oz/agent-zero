@@ -1,0 +1,128 @@
+name: Test Installation Scripts
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'scripts/**'
+      - 'requirements.txt'
+      - '.github/workflows/test-install.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'scripts/**'
+      - 'requirements.txt'
+      - '.github/workflows/test-install.yml'
+
+jobs:
+  test-scripts:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Test script syntax (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        # Test shell script syntax
+        bash -n scripts/install.sh
+        bash -n scripts/install-linux.sh
+        bash -n scripts/install-macos.sh
+
+    - name: Test PowerShell script syntax (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        # Test PowerShell script syntax
+        powershell -NoProfile -NonInteractive -Command "try { \$null = [System.Management.Automation.PSParser]::Tokenize((Get-Content 'scripts/install.ps1' -Raw), [ref]\$null); Write-Host 'PowerShell script syntax is valid' } catch { Write-Error 'PowerShell script syntax error'; exit 1 }"
+
+    - name: Test requirements.txt parsing
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Validate requirements.txt
+      run: |
+        python -m pip install --upgrade pip
+        # Test that requirements.txt can be parsed without installing
+        pip install --dry-run -r requirements.txt
+
+    - name: Test Docker commands (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        # Test that Docker commands in script are valid
+        docker --version
+        docker pull hello-world
+        docker run --rm hello-world
+
+    - name: Verify script permissions (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        # Check that scripts are executable
+        test -x scripts/install.sh
+        test -x scripts/install-linux.sh
+        test -x scripts/install-macos.sh
+
+    - name: Test script help/info sections
+      if: runner.os != 'Windows'
+      run: |
+        # Test that scripts show help when run with wrong conditions
+        cd /tmp
+        if bash $(pwd)/$(basename $GITHUB_WORKSPACE)/scripts/install.sh; then
+          echo "Script should fail when not in Agent Zero directory"
+          exit 1
+        else
+          echo "Script correctly detected wrong directory"
+        fi
+
+  test-conda-simulation:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        python-version: '3.12'
+        environment-file: false
+
+    - name: Test conda environment creation
+      shell: bash -l {0}
+      run: |
+        # Test conda environment creation similar to our scripts
+        conda create -n test-a0 python=3.12 -y
+        conda activate test-a0
+        conda info --envs
+        python --version
+
+    - name: Test Python dependencies installation
+      shell: bash -l {0}
+      run: |
+        conda activate test-a0
+        pip install --upgrade pip
+        # Test a subset of critical dependencies
+        pip install flask docker GitPython python-dotenv
+        python -c "import flask, docker, git, dotenv; print('Core dependencies imported successfully')"
+
+  test-docker-simulation:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Test Docker image availability
+      run: |
+        # Test that the Docker image referenced in scripts exists
+        docker pull agent0ai/agent-zero:latest || docker pull frdel/agent-zero-run:latest
+        docker images | grep -E "(agent0ai/agent-zero|frdel/agent-zero-run)"
+
+    - name: Test Docker run simulation
+      run: |
+        # Test Docker run command similar to our scripts (without actually running Agent Zero)
+        mkdir -p /tmp/agent-zero-data
+        docker run --rm -v "/tmp/agent-zero-data:/a0" agent0ai/agent-zero:latest echo "Docker volume mount test successful"

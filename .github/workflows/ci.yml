@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [3.11, 3.12]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install Playwright browsers
+      run: |
+        playwright install chromium
+
+    - name: Test import of main modules
+      run: |
+        python -c "import agent; print('Agent module imported successfully')"
+        python -c "import models; print('Models module imported successfully')"
+        python -c "import initialize; print('Initialize module imported successfully')"
+
+    - name: Check for syntax errors
+      run: |
+        python -m py_compile agent.py
+        python -m py_compile models.py
+        python -m py_compile run_ui.py
+        python -m py_compile initialize.py
